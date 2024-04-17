@@ -1,0 +1,31 @@
+name: Deploy to Firebase Hosting on PR merge to main or sandbox
+on:
+  pull_request:
+    branches:
+      - main
+      - sandbox
+    types:
+      - closed
+
+jobs:
+  build_and_preview:
+    if: |
+      ${{ github.event.pull_request.merged == true }} &&
+      ${{ github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'sandbox' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # Step to pull code from private repo
+      - name: Pull code from private repo to pages folder
+        uses: actions/checkout@v2
+        with:
+          repository: radicalxdev/core-ui-pages
+          path: 'pages'
+          token: ${{ secrets.PRIVATE_REPO_TOKEN }}
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.NEXT_PUBLIC_FIREBASE_SERVICE_ACCOUNT_RADICALX_68127 }}'
+          projectId: realityai-sandbox
